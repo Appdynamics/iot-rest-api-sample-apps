@@ -12,7 +12,6 @@ iot[appKey]  //AppKey generated in the controller when creating new application
 iot[collectorUrl] //URL to validate or send the events to collector
 ```
 Make sure all the packages imported in the file are installed.
-
-```python
+```
 $ python iot-rest-api-sample.py
 ```
