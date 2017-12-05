@@ -3,6 +3,8 @@ import json
 import time
 import random
 import gzip
+
+# For compatibility between python 2 and 3
 try:
   import BytesIO as io
 except ImportError:
