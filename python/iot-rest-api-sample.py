@@ -2,8 +2,11 @@ import requests
 import json
 import time
 import random
-import StringIO
 import gzip
+try:
+  import BytesIO as io
+except ImportError:
+  import io
 
 '''
 This sample code illustrates use of IoT REST API with sample data generated for a smart car application.
@@ -139,7 +142,7 @@ beacon_error_event = [{
 
 
 def send_beacon(beacon):
-  out = StringIO.StringIO()
+  out = io.BytesIO()
   with gzip.GzipFile(fileobj=out, mode='w') as f:
     json_str = json.dumps(beacon)
     json_bytes = json_str.encode('utf-8')
