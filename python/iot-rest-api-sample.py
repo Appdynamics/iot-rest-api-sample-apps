@@ -37,7 +37,7 @@ Data is first validated using /validate-beacons end point and then sent to /beac
 parser = argparse.ArgumentParser()
 
 # Mandatory argument - appkey
-parser.add_argument("appkey", help="Set application key")
+parser.add_argument("appkey", help="set application key")
 
 #optional arguments
 parser.add_argument("-c", "--collectorurl", default = "https://iot-col.eum-appdynamics.com",
@@ -45,11 +45,15 @@ parser.add_argument("-c", "--collectorurl", default = "https://iot-col.eum-appdy
 parser.add_argument("-u", "--requesturl", help="set sample URL to trigger network request and capture network event")
 parser.add_argument("-x", "--requesttype", default = "GET", help="set request type for the URL. Default is set to GET")
 parser.add_argument("-d", "--requestdata", help="set data to be sent with HTTP Request for URL")
+parser.add_argument("-v", "--verbose", action="store_true", help="enable debug info")
+
 
 args = parser.parse_args()
 
 # Construct collector url to send beacons to
 sendBeaconUrl = args.collectorurl + '/eumcollector/iot/v1/application/' + args.appkey + '/beacons'
+
+print("Beacon URL: {}".format(sendBeaconUrl))
 
 # Device Information on which the application is running
 device_info = {
@@ -94,6 +98,8 @@ def send_custom_event():
   beacon[0]['deviceInfo'] = device_info
   beacon[0]['versionInfo'] = version_info
   beacon[0]['customEvents'] = custom_event
+
+  print("send custom event")
   send_beacon(beacon)
 
 
@@ -123,11 +129,13 @@ def send_network_event():
   beacon[0]['deviceInfo'] = device_info
   beacon[0]['versionInfo'] = version_info
   beacon[0]['networkRequestEvents'] = network_event
+
+  print("send network event for url: {}".format(network_event['url']))
   send_beacon(beacon)
 
 
-# Trigger network request if url given as a command line option
-# Capture network event containing url, response code, duration etc
+# Trigger network request if url is given as a command line option
+# Capture network event including url, response code, duration etc
 # Construct and send beacon with the captured network event
 def capture_and_send_network_event():
   startTime = time.time()
@@ -137,6 +145,7 @@ def capture_and_send_network_event():
     data_str = json.dumps(args.requestdata)
     data_bytes = data_str.encode('utf-8')
 
+  # Attach ADRUM Headers to HTTP Request to get BT Correlation Data in Response Headers
   r = requests.request(args.requesttype, args.requesturl,
                        headers={'ADRUM': 'isAjax:true',
                                 'ADRUM_1': 'isMobile:true',
@@ -148,8 +157,16 @@ def capture_and_send_network_event():
 
   response_headers = {}
 
+  if args.verbose:
+    print("sent request to url: {}".format(args.requesturl))
+    print("status code: {}".format(r.status_code))
+    print("response headers: {}".format(r.headers))
+
+  # As part of network event, capture and send all response headers which include BT Correlation Data
   for key, value in r.headers.iteritems():
     response_headers[key] = [value]
+    if args.verbose:
+      print(key + ":" + value)
 
   network_event = [{}]
   network_event[0]['url'] = args.requesturl
@@ -166,6 +183,7 @@ def capture_and_send_network_event():
   beacon[0]['versionInfo'] = version_info
   beacon[0]['networkRequestEvents'] = network_event
 
+  print("send network event for url:" + network_event[0]['url'])
   send_beacon(beacon)
 
 
@@ -209,6 +227,7 @@ def send_error_event():
   beacon[0]['deviceInfo'] = device_info
   beacon[0]['versionInfo'] = version_info
   beacon[0]['errorEvents'] = error_events
+  print("send error event")
   send_beacon(beacon)
 
 
@@ -220,7 +239,8 @@ def send_beacon(beacon):
     json_bytes = json_str.encode('utf-8')
     f.write(json_bytes)
 
-  print('beacon: {}'.format(beacon))
+  if args.verbose:
+    print('beacon: {}'.format(beacon))
 
   # send beacon if validation is successful
   r = requests.post(
@@ -234,10 +254,14 @@ def send_beacon(beacon):
         data=out.getvalue()
       )
 
-  print('send url: {}'.format(sendBeaconUrl))
+
   print('resp code: {}'.format(r.status_code))
-  print('resp headers: {}'.format(r.headers))
-  print('resp content: {}\n'.format(r.content))
+
+  if args.verbose:
+    print('send url: {}'.format(sendBeaconUrl))
+    print('resp headers: {}'.format(r.headers))
+    if r.content:
+      print('resp content: {}\n'.format(r.content))
 
 
 # Send custom event

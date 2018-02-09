@@ -8,15 +8,16 @@ This sample app creates and sends one event each of type - custom, network and e
 
 ```python
 usage: iot-rest-api-sample.py appkey [-h] [-c COLLECTORURL] [-u REQUESTURL]
-       [-x REQUESTTYPE] [-d REQUESTDATA]
+       [-x REQUESTTYPE] [-d REQUESTDATA] [-v]
 
 positional arguments:
   appkey                Set application key
 
 optional arguments:
   -h, --help            Show this help message and exit
-  -c, --collectorurl    Set IoT Collector URL to which the beacons should be sent to
+  -c, --collectorurl    Set IoT Collector URL to which the beacons should be sent to. Default is set to Prod Collector.
   -u, --requesturl      set sample URL to trigger network request and capture network event
   -x, --requesttype     Set request type for the URL. Default is set to GET
   -d, --requestdata     Set data to be sent with HTTP Request for URL
+  -v, --verbose         Enable Debug Information
 ```
