@@ -40,11 +40,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument("appkey", help="Set application key")
 
 #optional arguments
-parser.add_argument("-c", "--collectorurl", default = "http://shadow-eum-iot-col.appdynamics.com",
-                    help="set IoT Collector URL to which the beacons should be sent to",)
-parser.add_argument("-u", "--requesturl", help="set sample URL to trigger network request, capture and send network event",)
-parser.add_argument("-x", "--requesttype", default = "GET", help="set request type for the URL. Default is set to GET",)
-parser.add_argument("-d", "--requestdata", help="set data to be sent with HTTP Request for URL",)
+parser.add_argument("-c", "--collectorurl", default = "https://iot-col.eum-appdynamics.com",
+                    help="set IoT Collector URL to which the beacons should be sent to")
+parser.add_argument("-u", "--requesturl", help="set sample URL to trigger network request and capture network event")
+parser.add_argument("-x", "--requesttype", default = "GET", help="set request type for the URL. Default is set to GET")
+parser.add_argument("-d", "--requestdata", help="set data to be sent with HTTP Request for URL")
 
 args = parser.parse_args()
 
@@ -243,7 +243,7 @@ def send_beacon(beacon):
 # Send custom event
 send_custom_event()
 
-# If url is given as an option, trigger network request, capture network event and send it to collector.
+# If url is given as an option then trigger network request to capture network event and send it to collector.
 if args.requesturl:
   capture_and_send_network_event()
 else:

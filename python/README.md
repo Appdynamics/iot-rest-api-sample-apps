@@ -16,7 +16,7 @@ positional arguments:
 optional arguments:
   -h, --help            Show this help message and exit
   -c, --collectorurl    Set IoT Collector URL to which the beacons should be sent to
-  -u, --requesturl      set sample URL to trigger network request, capture and send network event
+  -u, --requesturl      set sample URL to trigger network request and capture network event
   -x, --requesttype     Set request type for the URL. Default is set to GET
   -d, --requestdata     Set data to be sent with HTTP Request for URL
 ```
