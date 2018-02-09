@@ -6,18 +6,43 @@ These applications have been tested with python 2.7 and 3.0 versions on Mac OS X
 ## iot-rest-api-sample.py
 This sample app creates and sends one event each of type - custom, network and error events.
 
+Below is usage information for the sample app. Provide `appkey` as an input along with any options as needed.
+
 ```python
-usage: iot-rest-api-sample.py appkey [-h] [-c COLLECTORURL] [-u REQUESTURL]
-       [-x REQUESTTYPE] [-d REQUESTDATA] [-v]
+USAGE: python iot-rest-api-sample.py appkey [options]
+options:
+-c, --collectorurl <url> IoT Collector URL to which the beacons should be sent to.
+-u, --url <url>          URL to trigger network request and capture network event.
+-x, --request <command>  Specify the request method to url. It is set to GET by default.
+-d, --data <data>        Data in JSON format that is to be sent in a POST request.
+-v, --verbose            Enable Debug Information. It is disabled by default.
+-h, --help               Display available options
+```
 
-positional arguments:
-  appkey                Set application key
+Below are the default values used by the sample app if above options are not given
+```python
+DEFAULT PARAMS:
+collectorurl = https://iot-col.eum-appdynamics.com
+```
 
-optional arguments:
-  -h, --help            Show this help message and exit
-  -c, --collectorurl    Set IoT Collector URL to which the beacons should be sent to. Default is set to Prod Collector.
-  -u, --requesturl      set sample URL to trigger network request and capture network event
-  -x, --requesttype     Set request type for the URL. Default is set to GET
-  -d, --requestdata     Set data to be sent with HTTP Request for URL
-  -v, --verbose         Enable Debug Information
+Here are some examples of using the sample app:
+
+Display Usage Information
+```python
+$ python iot-rest-api-sample.py -h
+```
+
+Send Sample Custom, Network, and Error Events to default APPD Collector
+```python
+$ python iot-rest-api-sample.py <appkey>
+```
+
+Send Sample Custom, Network, and Error Events to Custom Collector (http://localhost:9001)
+```python
+$  python iot-rest-api-sample.py <appkey> -c http://localhost:9001
+```
+
+Trigger POST Network Request to URL (http://yoururl.com) with data in JSON format. Capture and Send Network Event to Custom Collector (http://localhost:9001)
+```python
+$  python iot-rest-api-sample.py <appkey> -c http://localhost:9001 -u http://yoururl.com -x POST -d '{"param1"="value1"}'
 ```
