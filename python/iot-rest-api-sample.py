@@ -20,6 +20,7 @@ import json
 import time
 import random
 import gzip
+import argparse
 
 # For compatibility between python 2 and 3
 try:
@@ -32,64 +33,73 @@ This sample code illustrates use of IoT REST API with sample data generated for 
 Data is first validated using /validate-beacons end point and then sent to /beacons end point to be stored
 '''
 
-# set iot appKey and collectorUrl
-iot = dict()
-iot['appKey'] = 'AB-AAB-AAC-AAD'
-iot['collectorUrl'] = 'https://iot-col.eum-appdynamics.com'
+# Read Command Line Options
+parser = argparse.ArgumentParser()
 
-iot['validateBeaconUrl'] = iot['collectorUrl'] + '/eumcollector/iot/v1/application/' + iot['appKey'] + '/validate-beacons'
-iot['sendBeaconUrl'] = iot['collectorUrl'] + '/eumcollector/iot/v1/application/' + iot['appKey'] + '/beacons'
+# Mandatory argument - appkey
+parser.add_argument("appkey", help="Set application key")
 
-# beacon with custom event
-beacon_custom_event = [{
-  'deviceInfo': {
+#optional arguments
+parser.add_argument("-c", "--collectorurl", default = "http://shadow-eum-iot-col.appdynamics.com",
+                    help="set IoT Collector URL to which the beacons should be sent to",)
+parser.add_argument("-u", "--requesturl", help="set sample URL to trigger network request, capture and send network event",)
+parser.add_argument("-x", "--requesttype", default = "GET", help="set request type for the URL. Default is set to GET",)
+parser.add_argument("-d", "--requestdata", help="set data to be sent with HTTP Request for URL",)
+
+args = parser.parse_args()
+
+# Construct collector url to send beacons to
+sendBeaconUrl = args.collectorurl + '/eumcollector/iot/v1/application/' + args.appkey + '/beacons'
+
+# Device Information on which the application is running
+device_info = {
     'deviceId': '1111',
     'deviceName': 'AudiS3',
     'deviceType': 'SmartCar'
-  },
-  'versionInfo': {
+  }
+
+# Version Information of the application
+version_info = {
     'hardwareVersion': '1.0',
     'firmwareVersion': '1.0',
     'softwareVersion': '1.0',
     'operatingSystemVersion': '1.0'
-  },
-  'customEvents': [{
-    'eventType': 'Custom Event',
-    'eventSummary': 'Diagnostic Data Captured in Smart Car',
-    'timestamp': (int(time.time())*1000),
-    'datetimeProperties': {
-      'Last Engine Start Time': 1512483673000
-    },
-    'stringProperties': {
-      'VinNumber': 'VN123456',
-    },
-    'doubleProperties': {
-      'Temperature': 101.3
-    },
-    'longProperties': {
-      'MPG Reading': 23,
-      'Annual Mileage': 12000
-    },
-    'booleanProperties': {
-      'Engine Lights ON': 'false'
-    }
-  }]
-}]
+  }
 
-# beacon with network event
-beacon_network_event = [{
-  'deviceInfo': {
-    'deviceId': '1111',
-    'deviceName': 'AudiS3',
-    'deviceType': 'SmartCar'
-  },
-  'versionInfo': {
-    'hardwareVersion': '1.0',
-    'firmwareVersion': '1.0',
-    'softwareVersion': '1.0',
-    'operatingSystemVersion': '1.0'
-  },
-  'networkRequestEvents': [{
+
+# Construct and send a beacon with a sample custom event
+def send_custom_event():
+  custom_event = [{
+      'eventType': 'Custom Event',
+      'eventSummary': 'Diagnostic Data Captured in Smart Car',
+      'timestamp': (int(time.time()) * 1000),
+      'datetimeProperties': {
+        'Last Engine Start Time': 1512483673000
+      },
+      'stringProperties': {
+        'VinNumber': 'VN123456',
+      },
+      'doubleProperties': {
+        'Temperature': 101.3
+      },
+      'longProperties': {
+        'MPG Reading': 23,
+        'Annual Mileage': 12000
+      },
+      'booleanProperties': {
+        'Engine Lights ON': 'false'
+      }
+    }]
+  beacon = [{}]
+  beacon[0]['deviceInfo'] = device_info
+  beacon[0]['versionInfo'] = version_info
+  beacon[0]['customEvents'] = custom_event
+  send_beacon(beacon)
+
+
+# Construct and send a beacon with a sample network event
+def send_network_event():
+  network_event = [{
     'timestamp': (int(time.time()) * 1000),
     'duration': 20,
     'url': 'https://apdy.api.com/weather',
@@ -109,22 +119,60 @@ beacon_network_event = [{
       'long': -122.39
     }
   }]
-}]
+  beacon = [{}]
+  beacon[0]['deviceInfo'] = device_info
+  beacon[0]['versionInfo'] = version_info
+  beacon[0]['networkRequestEvents'] = network_event
+  send_beacon(beacon)
 
-# beacon with error event
-beacon_error_event = [{
-  'deviceInfo': {
-    'deviceId': '1111',
-    'deviceName': 'AudiS3',
-    'deviceType': 'SmartCar'
-  },
-  'versionInfo':{
-    'hardwareVersion': '1.0',
-    'firmwareVersion': '1.0',
-    'softwareVersion': '1.0',
-    'operatingSystemVersion': '1.0'
-  },
-  'errorEvents': [{
+
+# Trigger network request if url given as a command line option
+# Capture network event containing url, response code, duration etc
+# Construct and send beacon with the captured network event
+def capture_and_send_network_event():
+  startTime = time.time()
+
+  data_bytes = None
+  if args.requestdata:
+    data_str = json.dumps(args.requestdata)
+    data_bytes = data_str.encode('utf-8')
+
+  r = requests.request(args.requesttype, args.requesturl,
+                       headers={'ADRUM': 'isAjax:true',
+                                'ADRUM_1': 'isMobile:true',
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'},
+                       data=data_bytes)
+
+  endTime = time.time()
+
+  response_headers = {}
+
+  for key, value in r.headers.iteritems():
+    response_headers[key] = [value]
+
+  network_event = [{}]
+  network_event[0]['url'] = args.requesturl
+  network_event[0]['statusCode'] = r.status_code
+  network_event[0]['responseHeaders'] = response_headers
+  network_event[0]['timestamp'] = (int(time.time()) * 1000)
+  network_event[0]['duration'] = int(endTime - startTime)
+
+  if (r.content):
+    network_event[0]['responseContentLength'] = len(r.content)
+
+  beacon = [{}]
+  beacon[0]['deviceInfo'] = device_info
+  beacon[0]['versionInfo'] = version_info
+  beacon[0]['networkRequestEvents'] = network_event
+
+  send_beacon(beacon)
+
+
+# Construct and send a beacon with a sample error event
+# Two errors of type critical and fatal are included in the beacon
+def send_error_event():
+  error_events = [{
     'timestamp': (int(time.time()) * 1000),
     'duration': 10,
     'name': 'Bluetooth Connection Error',
@@ -157,9 +205,14 @@ beacon_error_event = [{
     'errorStackTraceIndex': 0,
     'severity': 'fatal',
   }]
-}]
+  beacon = [{}]
+  beacon[0]['deviceInfo'] = device_info
+  beacon[0]['versionInfo'] = version_info
+  beacon[0]['errorEvents'] = error_events
+  send_beacon(beacon)
 
 
+# Send beacon to IoT Collector
 def send_beacon(beacon):
   out = io.BytesIO()
   with gzip.GzipFile(fileobj=out, mode='w') as f:
@@ -169,32 +222,9 @@ def send_beacon(beacon):
 
   print('beacon: {}'.format(beacon))
 
-  # validate beacon before sending (optional)
-  r = requests.post(
-        iot['validateBeaconUrl'],
-        headers={
-          'Content-Type': 'application/json',
-          'Content-Length': str(len(json_str)),
-          'Accept': 'application/json',
-          'Content-Encoding': 'gzip',
-        },
-        data=out.getvalue()
-      )
-
-  print('validate url: {}'.format(iot['validateBeaconUrl']))
-
-  if r.status_code != 200:
-    print('validate beacons failed. Check for beacon data format')
-    print('resp code: {}'.format(r.status_code))
-    print('resp headers: {}'.format(r.headers))
-    print('resp content: {}\n'.format(r.content))
-    return
-  else:
-    print('validate beacons passed')
-
   # send beacon if validation is successful
   r = requests.post(
-        iot['sendBeaconUrl'],
+        sendBeaconUrl,
         headers={
           'Content-Type': 'application/json',
           'Content-Length': str(len(json_str)),
@@ -204,12 +234,20 @@ def send_beacon(beacon):
         data=out.getvalue()
       )
 
-  print('send url: {}'.format(iot['sendBeaconUrl']))
+  print('send url: {}'.format(sendBeaconUrl))
   print('resp code: {}'.format(r.status_code))
   print('resp headers: {}'.format(r.headers))
   print('resp content: {}\n'.format(r.content))
 
 
-send_beacon(beacon_custom_event)
-send_beacon(beacon_network_event)
-send_beacon(beacon_error_event)
+# Send custom event
+send_custom_event()
+
+# If url is given as an option, trigger network request, capture network event and send it to collector.
+if args.requesturl:
+  capture_and_send_network_event()
+else:
+  send_network_event()
+
+# Send error event
+send_error_event()
