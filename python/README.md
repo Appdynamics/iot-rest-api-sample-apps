@@ -13,7 +13,7 @@ USAGE: python iot-rest-api-sample.py appkey [options]
 options:
 -c, --collectorurl <url> IoT Collector URL to which the beacons should be sent to.
 -u, --url <url>          URL to trigger network request and capture network event.
--x, --request <command>  Specify the request method to url. It is set to GET by default.
+-X, --request <command>  Specify the request method to url. It is set to GET by default.
 -d, --data <data>        Data in JSON format that is to be sent in a POST request.
 -v, --verbose            Enable Debug Information. It is disabled by default.
 -h, --help               Display available options
@@ -44,5 +44,5 @@ $  python iot-rest-api-sample.py <appkey> -c http://localhost:9001
 
 Trigger POST Network Request to URL (http://yoururl.com) with data in JSON format. Capture and Send Network Event to Custom Collector (http://localhost:9001)
 ```sh
-$  python iot-rest-api-sample.py <appkey> -c http://localhost:9001 -u http://yoururl.com -x POST -d '{"param1"="value1"}'
+$  python iot-rest-api-sample.py <appkey> -c http://localhost:9001 -u http://yoururl.com -X POST -d '{"param1"="value1"}'
 ```
