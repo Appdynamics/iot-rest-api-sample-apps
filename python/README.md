@@ -8,7 +8,7 @@ This sample app creates and sends one event each of type - custom, network and e
 
 Below is usage information for the sample app. Provide `appkey` as an input along with any options as needed.
 
-```python
+```sh
 USAGE: python iot-rest-api-sample.py appkey [options]
 options:
 -c, --collectorurl <url> IoT Collector URL to which the beacons should be sent to.
@@ -20,7 +20,7 @@ options:
 ```
 
 Below are the default values used by the sample app if above options are not given
-```python
+```sh
 DEFAULT PARAMS:
 collectorurl = https://iot-col.eum-appdynamics.com
 ```
@@ -28,21 +28,21 @@ collectorurl = https://iot-col.eum-appdynamics.com
 Here are some examples of using the sample app:
 
 Display Usage Information
-```python
+```sh
 $ python iot-rest-api-sample.py -h
 ```
 
 Send Sample Custom, Network, and Error Events to default APPD Collector
-```python
+```sh
 $ python iot-rest-api-sample.py <appkey>
 ```
 
 Send Sample Custom, Network, and Error Events to Custom Collector (http://localhost:9001)
-```python
+```sh
 $  python iot-rest-api-sample.py <appkey> -c http://localhost:9001
 ```
 
 Trigger POST Network Request to URL (http://yoururl.com) with data in JSON format. Capture and Send Network Event to Custom Collector (http://localhost:9001)
-```python
+```sh
 $  python iot-rest-api-sample.py <appkey> -c http://localhost:9001 -u http://yoururl.com -x POST -d '{"param1"="value1"}'
 ```
