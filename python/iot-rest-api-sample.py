@@ -238,6 +238,7 @@ def send_error_event():
 
 # Send beacon to IoT Collector
 def send_beacon(beacon):
+  # Compress Payload
   out = io.BytesIO()
   with gzip.GzipFile(fileobj=out, mode='w') as f:
     json_str = json.dumps(beacon)
@@ -247,7 +248,6 @@ def send_beacon(beacon):
   if args.verbose:
     print('beacon: {}'.format(beacon))
 
-  # send beacon if validation is successful
   r = requests.post(
         sendBeaconUrl,
         headers={
