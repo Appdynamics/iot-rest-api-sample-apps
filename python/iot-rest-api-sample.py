@@ -43,7 +43,7 @@ parser.add_argument("appkey", help="set application key")
 parser.add_argument("-c", "--collectorurl", default = "https://iot-col.eum-appdynamics.com",
                     help="set IoT Collector URL to which the beacons should be sent to")
 parser.add_argument("-u", "--url", help="set sample URL to trigger network request and capture network event")
-parser.add_argument("-x", "--request", default = "GET", help="set request method for the URL. Default is set to GET")
+parser.add_argument("-X", "--request", default = "GET", help="set request method for the URL. Default is set to GET")
 parser.add_argument("-d", "--data", help="set HTTP POST data in JSON format")
 parser.add_argument("-v", "--verbose", action="store_true", help="enable debug info")
 
@@ -252,13 +252,13 @@ def send_beacon(beacon):
         sendBeaconUrl,
         headers={
           'Content-Type': 'application/json',
-          'Content-Length': str(len(out.getvalue())),
           'Accept': 'application/json',
-          'Content-Encoding': 'gzip',
+          'Content-Encoding': 'gzip'
         },
         data=out.getvalue()
       )
 
+  print(r.request.headers)
   print('resp code: {}'.format(r.status_code))
 
   if args.verbose:
