@@ -258,7 +258,6 @@ def send_beacon(beacon):
         data=out.getvalue()
       )
 
-  print(r.request.headers)
   print('resp code: {}'.format(r.status_code))
 
   if args.verbose:
