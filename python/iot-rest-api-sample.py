@@ -30,7 +30,6 @@ except ImportError:
 
 '''
 This sample code illustrates use of IoT REST API with sample data generated for a smart car application.
-Data is first validated using /validate-beacons end point and then sent to /beacons end point to be stored
 '''
 
 # Read Command Line Options
